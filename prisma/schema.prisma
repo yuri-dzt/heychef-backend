@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(255)
+  plan_expires_at BigInt
+  created_at      BigInt
+  updated_at      BigInt?
+
+  users             User[]
+  tables            Table[]
+  categories        Category[]
+  products          Product[]
+  product_addon_groups ProductAddonGroup[]
+  product_addon_items  ProductAddonItem[]
+  orders            Order[]
+  order_items       OrderItem[]
+  order_item_addons OrderItemAddon[]
+  call_waiter_events CallWaiterEvent[]
+  report_dailies    ReportDaily[]
+  pages             Page[]
+  user_permissions  UserPermission[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @db.VarChar(255)
+  email           String   @db.VarChar(255)
+  password_hash   String   @db.VarChar(255)
+  role            Role     @default(USER)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  permissions     UserPermission[]
+
+  @@unique([organization_id, email])
+  @@index([organization_id])
+  @@map("users")
+}
+
+enum Role {
+  SUPER_ADMIN
+  SUPPORT
+  ADMIN
+  USER
+}
+
+model Table {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @db.VarChar(100)
+  qr_code_token   String   @unique @db.VarChar(255)
+  active          Boolean  @default(true)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  orders          Order[]
+  call_waiter_events CallWaiterEvent[]
+
+  @@index([organization_id])
+  @@map("tables")
+}
+
+model Category {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @db.VarChar(255)
+  order_index     Int      @default(0)
+  active          Boolean  @default(true)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  products        Product[]
+
+  @@index([organization_id])
+  @@map("categories")
+}
+
+model Product {
+  id              String   @id @default(uuid())
+  organization_id String
+  category_id     String
+  name            String   @db.VarChar(255)
+  description     String?  @db.VarChar(1000)
+  price_cents     Int
+  image_url       String?  @db.VarChar(500)
+  active          Boolean  @default(true)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  category        Category     @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  addon_groups    ProductAddonGroup[]
+  order_items     OrderItem[]
+
+  @@index([organization_id])
+  @@index([category_id])
+  @@map("products")
+}
+
+model ProductAddonGroup {
+  id              String   @id @default(uuid())
+  organization_id String
+  product_id      String
+  name            String   @db.VarChar(255)
+  min_select      Int      @default(0)
+  max_select      Int      @default(1)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  product         Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  items           ProductAddonItem[]
+
+  @@index([organization_id])
+  @@index([product_id])
+  @@map("product_addon_groups")
+}
+
+model ProductAddonItem {
+  id              String   @id @default(uuid())
+  organization_id String
+  addon_group_id  String
+  name            String   @db.VarChar(255)
+  price_cents     Int
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  addon_group     ProductAddonGroup @relation(fields: [addon_group_id], references: [id], onDelete: Cascade)
+  order_item_addons OrderItemAddon[]
+
+  @@index([organization_id])
+  @@index([addon_group_id])
+  @@map("product_addon_items")
+}
+
+enum OrderStatus {
+  RECEIVED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  organization_id String
+  table_id        String
+  status          OrderStatus @default(RECEIVED)
+  customer_name   String?     @db.VarChar(255)
+  notes           String?     @db.VarChar(1000)
+  total_cents     Int
+  cancel_reason   String?     @db.VarChar(500)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  table           Table        @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+
+  @@index([organization_id])
+  @@index([table_id])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String          @id @default(uuid())
+  organization_id String
+  order_id        String
+  product_id      String
+  quantity        Int
+  unit_price_cents Int
+  total_price_cents Int
+  status          OrderItemStatus @default(PENDING)
+  created_at      BigInt
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  order           Order        @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product         Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  addons          OrderItemAddon[]
+
+  @@index([organization_id])
+  @@index([order_id])
+  @@map("order_items")
+}
+
+model OrderItemAddon {
+  id              String   @id @default(uuid())
+  organization_id String
+  order_item_id   String
+  addon_item_id   String
+  price_cents     Int
+  created_at      BigInt
+
+  organization    Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  order_item      OrderItem       @relation(fields: [order_item_id], references: [id], onDelete: Cascade)
+  addon_item      ProductAddonItem @relation(fields: [addon_item_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@index([order_item_id])
+  @@map("order_item_addons")
+}
+
+enum CallWaiterStatus {
+  OPEN
+  RESOLVED
+}
+
+model CallWaiterEvent {
+  id              String           @id @default(uuid())
+  organization_id String
+  table_id        String
+  status          CallWaiterStatus @default(OPEN)
+  created_at      BigInt
+  resolved_at     BigInt?
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  table           Table        @relation(fields: [table_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@index([table_id])
+  @@map("call_waiter_events")
+}
+
+model ReportDaily {
+  id                String   @id @default(uuid())
+  organization_id   String
+  date              String   @db.VarChar(10)
+  total_orders      Int
+  total_revenue_cents Int
+  created_at        BigInt
+
+  organization      Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, date])
+  @@index([organization_id])
+  @@map("report_dailies")
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @db.VarChar(100)
+  created_at      BigInt
+
+  organization    Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  permissions     UserPermission[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id])
+  @@map("pages")
+}
+
+enum Action {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+model UserPermission {
+  id              String   @id @default(uuid())
+  organization_id String
+  user_id         String
+  page_id         String
+  action          Action
+  created_at      BigInt
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  page            Page         @relation(fields: [page_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, page_id, action])
+  @@index([organization_id])
+  @@index([user_id])
+  @@map("user_permissions")
+}
