@@ -7,6 +7,7 @@ import { DeleteProductUseCase } from '../../app/product/delete-product.use-case'
 import { createProductSchema, updateProductSchema } from '../schemas/product.schema';
 import { ValidationError } from '../../shared/errors';
 import { prisma } from '../../shared/prisma';
+import { paginationSchema, getPaginationParams } from '../../shared/pagination';
 
 export class ProductController {
   constructor(
@@ -19,16 +20,26 @@ export class ProductController {
 
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
-      const records = await prisma.product.findMany({
-        where: { organization_id: organizationId },
-        orderBy: { created_at: 'asc' },
-        include: {
-          addon_groups: {
-            include: { items: true },
+      const organizationId = req.user!.organizationId!;
+      const pagination = paginationSchema.parse(req.query);
+      const { skip, take, page, limit } = getPaginationParams(pagination);
+
+      const where = { organization_id: organizationId };
+
+      const [records, total] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          orderBy: { created_at: 'asc' },
+          skip,
+          take,
+          include: {
+            addon_groups: {
+              include: { items: true },
+            },
           },
-        },
-      });
+        }),
+        prisma.product.count({ where }),
+      ]);
 
       const data = records.map((r) => ({
         id: r.id,
@@ -54,7 +65,7 @@ export class ProductController {
         })),
       }));
 
-      res.status(200).json({ data });
+      res.status(200).json({ data, total, page, limit });
     } catch (error) {
       next(error);
     }
@@ -62,7 +73,7 @@ export class ProductController {
 
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const r = await prisma.product.findFirst({
         where: { id: req.params.id as string, organization_id: organizationId },
         include: {
@@ -114,7 +125,7 @@ export class ProductController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.createProductUseCase.execute({
         organizationId,
         categoryId: parsed.data.categoryId,
@@ -137,7 +148,7 @@ export class ProductController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.updateProductUseCase.execute({
         organizationId,
         productId: req.params.id as string,
@@ -157,7 +168,7 @@ export class ProductController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       await this.deleteProductUseCase.execute({
         organizationId,
         productId: req.params.id as string,

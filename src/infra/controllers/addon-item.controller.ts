@@ -19,7 +19,7 @@ export class AddonItemController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.createAddonItemUseCase.execute({
         organizationId,
         addonGroupId: req.params.id as string,
@@ -40,7 +40,7 @@ export class AddonItemController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.updateAddonItemUseCase.execute({
         organizationId,
         addonItemId: req.params.id as string,
@@ -56,7 +56,7 @@ export class AddonItemController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       await this.deleteAddonItemUseCase.execute({
         organizationId,
         addonItemId: req.params.id as string,

@@ -7,8 +7,9 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        organizationId: string;
-        role: string;
+        organizationId?: string;
+        role?: string;
+        type: 'admin' | 'user';
       };
     }
   }
@@ -16,8 +17,9 @@ declare global {
 
 interface JwtPayload {
   id: string;
-  organizationId: string;
-  role: string;
+  organizationId?: string;
+  role?: string;
+  type: 'admin' | 'user';
 }
 
 export const AuthMiddleware = (
@@ -40,10 +42,19 @@ export const AuthMiddleware = (
       id: decoded.id,
       organizationId: decoded.organizationId,
       role: decoded.role,
+      type: decoded.type,
     };
 
     next();
   } catch {
     res.status(401).json({ message: 'Invalid or expired token' });
   }
+};
+
+export const RestaurantOnlyMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.user?.type === 'admin') {
+    res.status(403).json({ message: 'This endpoint is for restaurant users only' });
+    return;
+  }
+  next();
 };

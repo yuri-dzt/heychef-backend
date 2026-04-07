@@ -16,7 +16,7 @@ export const PermissionMiddleware = (pageName: string, action: string) => {
         return;
       }
 
-      if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+      if (user.type === 'admin' || user.role === 'ADMIN') {
         next();
         return;
       }

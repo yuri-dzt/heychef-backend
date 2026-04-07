@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import { IUserRepository } from '../../contracts/user';
 import { UserMapper } from '../../contracts/user';
 import { config } from '../../shared/config';
@@ -14,6 +15,7 @@ interface LoginInput {
 
 interface LoginOutput {
   token: string;
+  refreshToken: string;
   user: UserDTO;
 }
 
@@ -40,13 +42,17 @@ export class LoginUseCase {
         id: user.id,
         organizationId: user.organizationId,
         role: user.role,
+        type: 'user',
       },
       config.jwtSecret,
-      { expiresIn: '24h' },
+      { expiresIn: '1h' },
     );
+
+    const refreshToken = uuidv4();
 
     return {
       token,
+      refreshToken,
       user: UserMapper.toDTO(user),
     };
   }

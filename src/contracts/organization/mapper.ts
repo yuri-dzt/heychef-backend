@@ -8,6 +8,8 @@ export class OrganizationMapper {
     plan_expires_at: bigint;
     created_at: bigint;
     updated_at: bigint | null;
+    plan_id?: string | null;
+    plan?: { name: string } | null;
   }): Organization {
     return new Organization({
       id: prisma.id,
@@ -15,6 +17,8 @@ export class OrganizationMapper {
       planExpiresAt: Number(prisma.plan_expires_at),
       createdAt: Number(prisma.created_at),
       updatedAt: prisma.updated_at !== null ? Number(prisma.updated_at) : undefined,
+      planId: prisma.plan_id ?? null,
+      planName: prisma.plan?.name ?? null,
     });
   }
 
@@ -25,6 +29,8 @@ export class OrganizationMapper {
       planExpiresAt: domain.planExpiresAt,
       createdAt: domain.createdAt,
       updatedAt: domain.updatedAt,
+      planId: domain.planId,
+      planName: domain.planName,
     };
   }
 

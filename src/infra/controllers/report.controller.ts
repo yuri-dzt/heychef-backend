@@ -20,7 +20,7 @@ export class ReportController {
       const query = getDailyReportsSchema.parse(req.query);
 
       const reports = await this.getDailyReportsUseCase.execute({
-        organizationId: req.user!.organizationId,
+        organizationId: req.user!.organizationId!,
         from: query.from,
         to: query.to,
       });

@@ -18,4 +18,7 @@ export const config = {
     .map((o) => o.trim())
     .filter(Boolean),
   port: Number(process.env.PORT) || 3000,
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseKey: process.env.SUPABASE_KEY || '',
+  supabaseBucket: process.env.SUPABASE_BUCKET || 'images',
 } as const;

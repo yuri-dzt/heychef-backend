@@ -4,6 +4,8 @@ export interface OrganizationProps {
   planExpiresAt: number;
   createdAt: number;
   updatedAt?: number;
+  planId?: string | null;
+  planName?: string | null;
 }
 
 export class Organization {
@@ -12,6 +14,8 @@ export class Organization {
   readonly planExpiresAt: number;
   readonly createdAt: number;
   readonly updatedAt?: number;
+  readonly planId?: string | null;
+  readonly planName?: string | null;
 
   constructor(props: OrganizationProps) {
     this.id = props.id;
@@ -19,5 +23,7 @@ export class Organization {
     this.planExpiresAt = props.planExpiresAt;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.planId = props.planId;
+    this.planName = props.planName;
   }
 }

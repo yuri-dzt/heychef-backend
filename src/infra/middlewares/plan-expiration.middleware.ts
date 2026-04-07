@@ -14,7 +14,7 @@ export const PlanExpirationMiddleware = async (
       return;
     }
 
-    if (user.role === 'SUPER_ADMIN') {
+    if (user.type === 'admin') {
       next();
       return;
     }

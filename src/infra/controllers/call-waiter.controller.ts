@@ -34,7 +34,7 @@ export class CallWaiterController {
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query = callWaiterQuerySchema.parse(req.query);
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
 
       const where: Record<string, unknown> = { organization_id: organizationId };
       if (query.status) {
@@ -68,7 +68,7 @@ export class CallWaiterController {
       const params = callWaiterParamsSchema.parse(req.params);
 
       const call = await this.resolveCallUseCase.execute({
-        organizationId: req.user!.organizationId,
+        organizationId: req.user!.organizationId!,
         callId: params.id,
       });
 

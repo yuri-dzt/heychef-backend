@@ -144,25 +144,42 @@ export class PublicController {
         return;
       }
 
-      await prisma.orderItemAddon.deleteMany({ where: { order_item_id: itemId } });
-      await prisma.orderItem.delete({ where: { id: itemId } });
+      const result = await prisma.$transaction(async (tx) => {
+        await tx.orderItemAddon.deleteMany({ where: { order_item_id: itemId } });
+        await tx.orderItem.delete({ where: { id: itemId } });
 
-      const remainingItems = await prisma.orderItem.findMany({
-        where: { order_id: order.id },
-        include: {
-          product: true,
-          addons: { include: { addon_item: true } },
-        },
+        const remainingItems = await tx.orderItem.findMany({
+          where: { order_id: order.id },
+          include: {
+            product: true,
+            addons: { include: { addon_item: true } },
+          },
+        });
+
+        if (remainingItems.length === 0) {
+          await tx.order.delete({ where: { id: order.id } });
+          return { deleted: true, remainingItems, updatedOrder: null };
+        }
+
+        const newTotal = remainingItems.reduce((sum, i) => sum + i.total_price_cents, 0);
+
+        const updatedOrder = await tx.order.update({
+          where: { id: order.id },
+          data: {
+            total_cents: newTotal,
+            updated_at: BigInt(Date.now()),
+          },
+        });
+
+        return { deleted: false, remainingItems, updatedOrder };
       });
 
-      if (remainingItems.length === 0) {
-        await prisma.order.delete({ where: { id: order.id } });
-
+      if (result.deleted) {
         orderEvents.emitStatusChange({
           id: order.id,
           organizationId: order.organization_id,
           tableId: order.table_id,
-          status: 'CANCELLED' as OrderStatus,
+          status: 'CANCELED' as OrderStatus,
           customerName: order.customer_name ?? undefined,
           notes: order.notes ?? undefined,
           totalCents: 0,
@@ -175,15 +192,8 @@ export class PublicController {
         return;
       }
 
-      const newTotal = remainingItems.reduce((sum, i) => sum + i.total_price_cents, 0);
-
-      const updatedOrder = await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          total_cents: newTotal,
-          updated_at: BigInt(Date.now()),
-        },
-      });
+      const updatedOrder = result.updatedOrder!;
+      const remainingItems = result.remainingItems;
 
       orderEvents.emitStatusChange({
         id: updatedOrder.id,

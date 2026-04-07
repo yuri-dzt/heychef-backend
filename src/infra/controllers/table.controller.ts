@@ -6,6 +6,8 @@ import { DeleteTableUseCase } from '../../app/table/delete-table.use-case';
 import { RegenerateTokenUseCase } from '../../app/table/regenerate-token.use-case';
 import { createTableSchema, updateTableSchema } from '../schemas/table.schema';
 import { ValidationError } from '../../shared/errors';
+import { prisma } from '../../shared/prisma';
+import { logAudit } from '../../shared/audit';
 
 export class TableController {
   constructor(
@@ -18,7 +20,7 @@ export class TableController {
 
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.listTablesUseCase.execute({ organizationId });
       res.status(200).json({ data });
     } catch (error) {
@@ -33,10 +35,22 @@ export class TableController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.createTableUseCase.execute({
         organizationId,
         name: parsed.data.name,
+      });
+
+      const userName = (await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }))?.name || 'Sistema';
+      await logAudit({
+        organizationId,
+        userId: req.user!.id,
+        userName,
+        action: 'CREATE',
+        entity: 'table',
+        entityId: data.id,
+        details: `Created table ${parsed.data.name}`,
+        ipAddress: req.ip || undefined,
       });
 
       res.status(201).json({ data });
@@ -52,7 +66,7 @@ export class TableController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.updateTableUseCase.execute({
         organizationId,
         tableId: req.params.id as string,
@@ -68,10 +82,22 @@ export class TableController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       await this.deleteTableUseCase.execute({
         organizationId,
         tableId: req.params.id as string,
+      });
+
+      const userName = (await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }))?.name || 'Sistema';
+      await logAudit({
+        organizationId,
+        userId: req.user!.id,
+        userName,
+        action: 'DELETE',
+        entity: 'table',
+        entityId: req.params.id as string,
+        details: `Deleted table ${req.params.id}`,
+        ipAddress: req.ip || undefined,
       });
 
       res.status(204).json({ data: null });
@@ -82,7 +108,7 @@ export class TableController {
 
   regenerateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.regenerateTokenUseCase.execute({
         organizationId,
         tableId: req.params.id as string,

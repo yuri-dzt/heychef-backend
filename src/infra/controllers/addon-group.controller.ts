@@ -19,7 +19,7 @@ export class AddonGroupController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.createAddonGroupUseCase.execute({
         organizationId,
         productId: req.params.id as string,
@@ -41,7 +41,7 @@ export class AddonGroupController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.updateAddonGroupUseCase.execute({
         organizationId,
         addonGroupId: req.params.id as string,
@@ -58,7 +58,7 @@ export class AddonGroupController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       await this.deleteAddonGroupUseCase.execute({
         organizationId,
         addonGroupId: req.params.id as string,

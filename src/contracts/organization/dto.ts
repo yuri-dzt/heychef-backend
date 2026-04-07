@@ -4,4 +4,6 @@ export interface OrganizationDTO {
   planExpiresAt: number;
   createdAt: number;
   updatedAt?: number;
+  planId?: string | null;
+  planName?: string | null;
 }

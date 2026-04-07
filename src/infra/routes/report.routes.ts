@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { makeReportController } from '../factories/report.factory';
-import { AuthMiddleware } from '../middlewares/auth.middleware';
+import { AuthMiddleware, RestaurantOnlyMiddleware } from '../middlewares/auth.middleware';
 import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 
@@ -10,16 +10,18 @@ const controller = makeReportController();
 router.post(
   '/generate',
   AuthMiddleware,
-  PlanExpirationMiddleware,
+  RestaurantOnlyMiddleware,
   PermissionMiddleware('reports', 'CREATE'),
+  PlanExpirationMiddleware,
   controller.generate,
 );
 
 router.get(
   '/daily',
   AuthMiddleware,
-  PlanExpirationMiddleware,
+  RestaurantOnlyMiddleware,
   PermissionMiddleware('reports', 'READ'),
+  PlanExpirationMiddleware,
   controller.getDailyReports,
 );
 

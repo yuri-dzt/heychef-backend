@@ -7,14 +7,16 @@ const router = Router();
 const controller = makeOrganizationController();
 
 const superAdminOnly = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.user?.role !== 'SUPER_ADMIN') {
-    next(new ForbiddenError('Only SUPER_ADMIN can access this resource'));
+  if (req.user?.type !== 'admin') {
+    next(new ForbiddenError('Only admins can access this resource'));
     return;
   }
   next();
 };
 
 router.get('/', AuthMiddleware, superAdminOnly, controller.list);
+router.post('/', AuthMiddleware, superAdminOnly, controller.create);
+router.get('/me', AuthMiddleware, controller.getMyOrg);
 router.get('/:id', AuthMiddleware, superAdminOnly, controller.getById);
 router.patch('/:id/renew-plan', AuthMiddleware, superAdminOnly, controller.renewPlan);
 

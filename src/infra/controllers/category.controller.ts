@@ -16,7 +16,7 @@ export class CategoryController {
 
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.listCategoriesUseCase.execute({ organizationId });
       res.status(200).json({ data });
     } catch (error) {
@@ -31,7 +31,7 @@ export class CategoryController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.createCategoryUseCase.execute({
         organizationId,
         name: parsed.data.name,
@@ -51,7 +51,7 @@ export class CategoryController {
         throw new ValidationError(parsed.error.errors[0].message);
       }
 
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       const data = await this.updateCategoryUseCase.execute({
         organizationId,
         categoryId: req.params.id as string,
@@ -68,7 +68,7 @@ export class CategoryController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
       await this.deleteCategoryUseCase.execute({
         organizationId,
         categoryId: req.params.id as string,

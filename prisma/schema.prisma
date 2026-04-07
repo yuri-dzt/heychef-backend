@@ -7,13 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Plan {
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(100)
+  description     String?  @db.VarChar(500)
+  price_cents     Int      @default(0)
+  max_users       Int      @default(5)
+  max_tables      Int      @default(10)
+  max_products    Int      @default(50)
+  max_categories  Int      @default(10)
+  max_orders_per_day Int   @default(100)
+  active          Boolean  @default(true)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  organizations   Organization[]
+
+  @@map("plans")
+}
+
 model Organization {
   id              String   @id @default(uuid())
   name            String   @db.VarChar(255)
+  plan_id         String?
   plan_expires_at BigInt
   created_at      BigInt
   updated_at      BigInt?
 
+  plan              Plan?    @relation(fields: [plan_id], references: [id], onDelete: SetNull)
   users             User[]
   tables            Table[]
   categories        Category[]
@@ -27,8 +48,21 @@ model Organization {
   report_dailies    ReportDaily[]
   pages             Page[]
   user_permissions  UserPermission[]
+  audit_logs        AuditLog[]
 
+  @@index([plan_id])
   @@map("organizations")
+}
+
+model Admin {
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(255)
+  email           String   @unique @db.VarChar(255)
+  password_hash   String   @db.VarChar(255)
+  created_at      BigInt
+  updated_at      BigInt?
+
+  @@map("admins")
 }
 
 model User {
@@ -50,10 +84,26 @@ model User {
 }
 
 enum Role {
-  SUPER_ADMIN
   SUPPORT
   ADMIN
   USER
+}
+
+model Session {
+  id              String   @id @default(uuid())
+  user_id         String
+  organization_id String?
+  user_type       String   @db.VarChar(10)  // 'admin' or 'user'
+  token_hash      String   @db.VarChar(255)
+  device_info     String?  @db.VarChar(500)
+  ip_address      String?  @db.VarChar(45)
+  last_active_at  BigInt
+  expires_at      BigInt
+  created_at      BigInt
+
+  @@index([user_id])
+  @@index([token_hash])
+  @@map("sessions")
 }
 
 model Table {
@@ -295,4 +345,23 @@ model UserPermission {
   @@index([organization_id])
   @@index([user_id])
   @@map("user_permissions")
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  organization_id String
+  user_id         String
+  user_name       String   @db.VarChar(255)
+  action          String   @db.VarChar(50)
+  entity          String   @db.VarChar(50)
+  entity_id       String?  @db.VarChar(255)
+  details         String?  @db.VarChar(1000)
+  ip_address      String?  @db.VarChar(45)
+  created_at      BigInt
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@index([created_at])
+  @@map("audit_logs")
 }

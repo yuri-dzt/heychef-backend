@@ -17,6 +17,7 @@ export class PrismaOrganizationRepository implements IOrganizationRepository {
   async findAll(): Promise<Organization[]> {
     const records = await prisma.organization.findMany({
       orderBy: { created_at: 'desc' },
+      include: { plan: { select: { name: true } } },
     });
 
     return records.map(OrganizationMapper.toDomain);

@@ -12,6 +12,8 @@ import {
 import { OrderStatus } from '../../domain/order';
 import { prisma } from '../../shared/prisma';
 import { orderEvents } from '../events/order-events';
+import { paginationSchema, getPaginationParams } from '../../shared/pagination';
+import { logAudit } from '../../shared/audit';
 
 export class OrderController {
   constructor(
@@ -24,28 +26,35 @@ export class OrderController {
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query = orderQuerySchema.parse(req.query);
-      const organizationId = req.user!.organizationId;
+      const pagination = paginationSchema.parse(req.query);
+      const { skip, take, page, limit } = getPaginationParams(pagination);
+      const organizationId = req.user!.organizationId!;
 
       const where: Record<string, unknown> = { organization_id: organizationId };
       if (query.status) {
         where.status = query.status;
       }
 
-      const records = await prisma.order.findMany({
-        where,
-        orderBy: { created_at: 'desc' },
-        include: {
-          table: true,
-          items: {
-            include: {
-              product: true,
-              addons: {
-                include: { addon_item: true },
+      const [records, total] = await Promise.all([
+        prisma.order.findMany({
+          where,
+          orderBy: { created_at: 'desc' },
+          skip,
+          take,
+          include: {
+            table: true,
+            items: {
+              include: {
+                product: true,
+                addons: {
+                  include: { addon_item: true },
+                },
               },
             },
           },
-        },
-      });
+        }),
+        prisma.order.count({ where }),
+      ]);
 
       const data = records.map((r) => ({
         id: r.id,
@@ -78,7 +87,7 @@ export class OrderController {
         })),
       }));
 
-      res.status(200).json({ data });
+      res.status(200).json({ data, total, page, limit });
     } catch (error) {
       next(error);
     }
@@ -89,7 +98,7 @@ export class OrderController {
       const params = orderParamsSchema.parse(req.params);
 
       const order = await this.getOrderUseCase.execute({
-        organizationId: req.user!.organizationId,
+        organizationId: req.user!.organizationId!,
         orderId: params.id,
       });
 
@@ -105,9 +114,21 @@ export class OrderController {
       const body = updateOrderStatusSchema.parse(req.body);
 
       const order = await this.updateOrderStatusUseCase.execute({
-        organizationId: req.user!.organizationId,
+        organizationId: req.user!.organizationId!,
         orderId: params.id,
         status: body.status as OrderStatus,
+      });
+
+      const userName = (await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }))?.name || 'Sistema';
+      await logAudit({
+        organizationId: req.user!.organizationId!,
+        userId: req.user!.id,
+        userName,
+        action: 'STATUS_CHANGE',
+        entity: 'order',
+        entityId: params.id,
+        details: `Status changed to ${body.status}`,
+        ipAddress: req.ip || undefined,
       });
 
       res.status(200).json({ data: order });
@@ -122,9 +143,21 @@ export class OrderController {
       const body = cancelOrderSchema.parse(req.body);
 
       const order = await this.cancelOrderUseCase.execute({
-        organizationId: req.user!.organizationId,
+        organizationId: req.user!.organizationId!,
         orderId: params.id,
         reason: body.reason,
+      });
+
+      const userName = (await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } }))?.name || 'Sistema';
+      await logAudit({
+        organizationId: req.user!.organizationId!,
+        userId: req.user!.id,
+        userName,
+        action: 'DELETE',
+        entity: 'order',
+        entityId: params.id,
+        details: 'Order cancelled',
+        ipAddress: req.ip || undefined,
       });
 
       res.status(200).json({ data: order });
@@ -137,7 +170,7 @@ export class OrderController {
     try {
       const itemId = req.params.itemId as string;
       const { status } = req.body;
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
 
       const validStatuses = ['PENDING', 'PREPARING', 'READY'];
       if (!validStatuses.includes(status)) {
@@ -199,7 +232,7 @@ export class OrderController {
   removeItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const itemId = req.params.itemId as string;
-      const organizationId = req.user!.organizationId;
+      const organizationId = req.user!.organizationId!;
 
       const item = await (prisma.orderItem as any).findUnique({
         where: { id: itemId },
@@ -225,7 +258,7 @@ export class OrderController {
           id: item.order.id,
           organizationId: item.order.organization_id,
           tableId: item.order.table_id,
-          status: 'CANCELLED' as OrderStatus,
+          status: 'CANCELED' as OrderStatus,
           customerName: item.order.customer_name ?? undefined,
           notes: item.order.notes ?? undefined,
           totalCents: 0,
