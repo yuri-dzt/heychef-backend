@@ -25,6 +25,7 @@ interface MenuProduct {
   description?: string;
   priceCents: number;
   imageUrl?: string;
+  ingredients?: string[];
   addonGroups: MenuAddonGroup[];
 }
 
@@ -92,6 +93,7 @@ export class GetPublicMenuUseCase {
           description: prod.description ?? undefined,
           priceCents: prod.price_cents,
           imageUrl: prod.image_url ?? undefined,
+          ingredients: prod.ingredients ? JSON.parse(prod.ingredients as string) : undefined,
           addonGroups: prod.addon_groups.map((group) => ({
             id: group.id,
             name: group.name,

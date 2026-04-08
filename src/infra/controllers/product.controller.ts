@@ -49,6 +49,7 @@ export class ProductController {
         description: r.description ?? undefined,
         priceCents: r.price_cents,
         imageUrl: r.image_url ?? undefined,
+        ingredients: r.ingredients ? JSON.parse(r.ingredients) : undefined,
         active: r.active,
         createdAt: Number(r.created_at),
         updatedAt: r.updated_at ? Number(r.updated_at) : undefined,
@@ -96,6 +97,7 @@ export class ProductController {
         description: r.description ?? undefined,
         priceCents: r.price_cents,
         imageUrl: r.image_url ?? undefined,
+        ingredients: r.ingredients ? JSON.parse(r.ingredients) : undefined,
         active: r.active,
         createdAt: Number(r.created_at),
         updatedAt: r.updated_at ? Number(r.updated_at) : undefined,
@@ -133,6 +135,7 @@ export class ProductController {
         description: parsed.data.description,
         priceCents: parsed.data.priceCents,
         imageUrl: parsed.data.imageUrl,
+        ingredients: parsed.data.ingredients,
       });
 
       res.status(201).json({ data });
@@ -157,6 +160,7 @@ export class ProductController {
         description: parsed.data.description,
         priceCents: parsed.data.priceCents,
         imageUrl: parsed.data.imageUrl,
+        ingredients: parsed.data.ingredients,
         active: parsed.data.active,
       });
 

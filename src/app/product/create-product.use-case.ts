@@ -11,6 +11,7 @@ interface CreateProductInput {
   description?: string;
   priceCents: number;
   imageUrl?: string;
+  ingredients?: string[];
 }
 
 export class CreateProductUseCase {
@@ -27,6 +28,7 @@ export class CreateProductUseCase {
       description: input.description,
       priceCents: input.priceCents,
       imageUrl: input.imageUrl,
+      ingredients: input.ingredients,
       active: true,
       createdAt: now,
     });

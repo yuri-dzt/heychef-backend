@@ -145,6 +145,7 @@ model Product {
   category_id     String
   name            String   @db.VarChar(255)
   description     String?  @db.VarChar(1000)
+  ingredients     String?  @db.VarChar(2000)
   price_cents     Int
   image_url       String?  @db.VarChar(500)
   active          Boolean  @default(true)

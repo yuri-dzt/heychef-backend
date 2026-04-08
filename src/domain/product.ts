@@ -6,6 +6,7 @@ export interface ProductProps {
   description?: string;
   priceCents: number;
   imageUrl?: string;
+  ingredients?: string[];
   active: boolean;
   createdAt: number;
   updatedAt?: number;
@@ -19,6 +20,7 @@ export class Product {
   readonly description?: string;
   readonly priceCents: number;
   readonly imageUrl?: string;
+  readonly ingredients?: string[];
   readonly active: boolean;
   readonly createdAt: number;
   readonly updatedAt?: number;
@@ -31,6 +33,7 @@ export class Product {
     this.description = props.description;
     this.priceCents = props.priceCents;
     this.imageUrl = props.imageUrl;
+    this.ingredients = props.ingredients;
     this.active = props.active;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;

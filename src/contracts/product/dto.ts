@@ -6,6 +6,7 @@ export interface ProductDTO {
   description?: string;
   priceCents: number;
   imageUrl?: string;
+  ingredients?: string[];
   active: boolean;
   createdAt: number;
   updatedAt?: number;

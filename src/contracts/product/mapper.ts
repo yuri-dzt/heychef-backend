@@ -10,6 +10,7 @@ export class ProductMapper {
     description: string | null;
     price_cents: number;
     image_url: string | null;
+    ingredients: string | null;
     active: boolean;
     created_at: bigint;
     updated_at: bigint | null;
@@ -22,6 +23,7 @@ export class ProductMapper {
       description: prisma.description ?? undefined,
       priceCents: prisma.price_cents,
       imageUrl: prisma.image_url ?? undefined,
+      ingredients: prisma.ingredients ? JSON.parse(prisma.ingredients) : undefined,
       active: prisma.active,
       createdAt: Number(prisma.created_at),
       updatedAt: prisma.updated_at !== null ? Number(prisma.updated_at) : undefined,
@@ -37,6 +39,7 @@ export class ProductMapper {
       description: domain.description,
       priceCents: domain.priceCents,
       imageUrl: domain.imageUrl,
+      ingredients: domain.ingredients,
       active: domain.active,
       createdAt: domain.createdAt,
       updatedAt: domain.updatedAt,
@@ -51,6 +54,7 @@ export class ProductMapper {
     description: string | null;
     price_cents: number;
     image_url: string | null;
+    ingredients: string | null;
     active: boolean;
     created_at: bigint;
     updated_at: bigint | null;
@@ -63,6 +67,7 @@ export class ProductMapper {
       description: domain.description ?? null,
       price_cents: domain.priceCents,
       image_url: domain.imageUrl ?? null,
+      ingredients: domain.ingredients ? JSON.stringify(domain.ingredients) : null,
       active: domain.active,
       created_at: BigInt(domain.createdAt),
       updated_at: domain.updatedAt !== undefined ? BigInt(domain.updatedAt) : null,

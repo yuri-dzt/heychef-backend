@@ -12,6 +12,7 @@ interface UpdateProductInput {
   description?: string;
   priceCents?: number;
   imageUrl?: string;
+  ingredients?: string[];
   active?: boolean;
 }
 
@@ -35,6 +36,7 @@ export class UpdateProductUseCase {
       description: input.description ?? existing.description,
       priceCents: input.priceCents ?? existing.priceCents,
       imageUrl: input.imageUrl ?? existing.imageUrl,
+      ingredients: input.ingredients ?? existing.ingredients,
       active: input.active ?? existing.active,
       createdAt: existing.createdAt,
       updatedAt: now,
