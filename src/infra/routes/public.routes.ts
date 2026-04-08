@@ -13,6 +13,7 @@ const controller = makePublicController();
 
 publicRouter.get('/menu/:tableToken', controller.getMenu);
 publicRouter.get('/order/:tableToken', controller.getActiveOrder);
+publicRouter.get('/events/:tableToken', controller.subscribeEvents);
 publicRouter.post('/orders/:tableToken', publicRateLimiter, controller.createOrder);
 publicRouter.delete('/order/:tableToken/items/:itemId', controller.removeItem);
 

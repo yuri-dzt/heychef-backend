@@ -36,24 +36,18 @@ export class ProductController {
             addon_groups: {
               include: { items: true },
             },
+            addon_group_links: {
+              include: {
+                addon_group: { include: { items: true } },
+              },
+            },
           },
         }),
         prisma.product.count({ where }),
       ]);
 
-      const data = records.map((r) => ({
-        id: r.id,
-        organizationId: r.organization_id,
-        categoryId: r.category_id,
-        name: r.name,
-        description: r.description ?? undefined,
-        priceCents: r.price_cents,
-        imageUrl: r.image_url ?? undefined,
-        ingredients: r.ingredients ? JSON.parse(r.ingredients) : undefined,
-        active: r.active,
-        createdAt: Number(r.created_at),
-        updatedAt: r.updated_at ? Number(r.updated_at) : undefined,
-        addonGroups: r.addon_groups.map((g) => ({
+      const data = records.map((r) => {
+        const mapGroup = (g: typeof r.addon_groups[number]) => ({
           id: g.id,
           name: g.name,
           minSelect: g.min_select,
@@ -63,8 +57,29 @@ export class ProductController {
             name: i.name,
             priceCents: i.price_cents,
           })),
-        })),
-      }));
+        });
+
+        const allAddonGroups = [
+          ...r.addon_groups.map(mapGroup),
+          ...r.addon_group_links.map((l) => mapGroup(l.addon_group)),
+        ];
+        const addonGroups = [...new Map(allAddonGroups.map((g) => [g.id, g])).values()];
+
+        return {
+          id: r.id,
+          organizationId: r.organization_id,
+          categoryId: r.category_id,
+          name: r.name,
+          description: r.description ?? undefined,
+          priceCents: r.price_cents,
+          imageUrl: r.image_url ?? undefined,
+          ingredients: r.ingredients ? JSON.parse(r.ingredients) : undefined,
+          active: r.active,
+          createdAt: Number(r.created_at),
+          updatedAt: r.updated_at ? Number(r.updated_at) : undefined,
+          addonGroups,
+        };
+      });
 
       res.status(200).json({ data, total, page, limit });
     } catch (error) {
@@ -81,6 +96,11 @@ export class ProductController {
           addon_groups: {
             include: { items: true },
           },
+          addon_group_links: {
+            include: {
+              addon_group: { include: { items: true } },
+            },
+          },
         },
       });
 
@@ -88,6 +108,24 @@ export class ProductController {
         res.status(404).json({ message: 'Product not found' });
         return;
       }
+
+      const mapGroup = (g: typeof r.addon_groups[number]) => ({
+        id: g.id,
+        name: g.name,
+        minSelect: g.min_select,
+        maxSelect: g.max_select,
+        items: g.items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          priceCents: i.price_cents,
+        })),
+      });
+
+      const allAddonGroups = [
+        ...r.addon_groups.map(mapGroup),
+        ...r.addon_group_links.map((l) => mapGroup(l.addon_group)),
+      ];
+      const addonGroups = [...new Map(allAddonGroups.map((g) => [g.id, g])).values()];
 
       const data = {
         id: r.id,
@@ -101,17 +139,7 @@ export class ProductController {
         active: r.active,
         createdAt: Number(r.created_at),
         updatedAt: r.updated_at ? Number(r.updated_at) : undefined,
-        addonGroups: r.addon_groups.map((g) => ({
-          id: g.id,
-          name: g.name,
-          minSelect: g.min_select,
-          maxSelect: g.max_select,
-          items: g.items.map((i) => ({
-            id: i.id,
-            name: i.name,
-            priceCents: i.price_cents,
-          })),
-        })),
+        addonGroups,
       };
 
       res.status(200).json({ data });

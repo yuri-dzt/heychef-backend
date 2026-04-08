@@ -5,7 +5,7 @@ export class ProductAddonGroupMapper {
   static toDomain(prisma: {
     id: string;
     organization_id: string;
-    product_id: string;
+    product_id: string | null;
     name: string;
     min_select: number;
     max_select: number;
@@ -15,7 +15,7 @@ export class ProductAddonGroupMapper {
     return new ProductAddonGroup({
       id: prisma.id,
       organizationId: prisma.organization_id,
-      productId: prisma.product_id,
+      productId: prisma.product_id ?? undefined,
       name: prisma.name,
       minSelect: prisma.min_select,
       maxSelect: prisma.max_select,
@@ -40,7 +40,7 @@ export class ProductAddonGroupMapper {
   static toPrisma(domain: ProductAddonGroup): {
     id: string;
     organization_id: string;
-    product_id: string;
+    product_id: string | null;
     name: string;
     min_select: number;
     max_select: number;
@@ -50,7 +50,7 @@ export class ProductAddonGroupMapper {
     return {
       id: domain.id,
       organization_id: domain.organizationId,
-      product_id: domain.productId,
+      product_id: domain.productId ?? null,
       name: domain.name,
       min_select: domain.minSelect,
       max_select: domain.maxSelect,

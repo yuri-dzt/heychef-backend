@@ -6,6 +6,7 @@ export interface OrderItemProps {
   quantity: number;
   unitPriceCents: number;
   totalPriceCents: number;
+  notes?: string;
   createdAt: number;
 }
 
@@ -17,6 +18,7 @@ export class OrderItem {
   readonly quantity: number;
   readonly unitPriceCents: number;
   readonly totalPriceCents: number;
+  readonly notes?: string;
   readonly createdAt: number;
 
   constructor(props: OrderItemProps) {
@@ -27,6 +29,7 @@ export class OrderItem {
     this.quantity = props.quantity;
     this.unitPriceCents = props.unitPriceCents;
     this.totalPriceCents = props.totalPriceCents;
+    this.notes = props.notes;
     this.createdAt = props.createdAt;
   }
 }

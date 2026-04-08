@@ -73,6 +73,11 @@ export class GetPublicMenuUseCase {
                 items: true,
               },
             },
+            addon_group_links: {
+              include: {
+                addon_group: { include: { items: true } },
+              },
+            },
           },
         },
       },
@@ -87,14 +92,8 @@ export class GetPublicMenuUseCase {
         id: cat.id,
         name: cat.name,
         orderIndex: cat.order_index,
-        products: cat.products.map((prod) => ({
-          id: prod.id,
-          name: prod.name,
-          description: prod.description ?? undefined,
-          priceCents: prod.price_cents,
-          imageUrl: prod.image_url ?? undefined,
-          ingredients: prod.ingredients ? JSON.parse(prod.ingredients as string) : undefined,
-          addonGroups: prod.addon_groups.map((group) => ({
+        products: cat.products.map((prod) => {
+          const mapGroup = (group: typeof prod.addon_groups[number]) => ({
             id: group.id,
             name: group.name,
             minSelect: group.min_select,
@@ -104,8 +103,24 @@ export class GetPublicMenuUseCase {
               name: item.name,
               priceCents: item.price_cents,
             })),
-          })),
-        })),
+          });
+
+          const allAddonGroups = [
+            ...prod.addon_groups.map(mapGroup),
+            ...prod.addon_group_links.map((l) => mapGroup(l.addon_group)),
+          ];
+          const addonGroups = [...new Map(allAddonGroups.map((g) => [g.id, g])).values()];
+
+          return {
+            id: prod.id,
+            name: prod.name,
+            description: prod.description ?? undefined,
+            priceCents: prod.price_cents,
+            imageUrl: prod.image_url ?? undefined,
+            ingredients: prod.ingredients ? JSON.parse(prod.ingredients as string) : undefined,
+            addonGroups,
+          };
+        }),
       })),
     };
   }

@@ -6,5 +6,6 @@ export interface OrderItemDTO {
   quantity: number;
   unitPriceCents: number;
   totalPriceCents: number;
+  notes?: string;
   createdAt: number;
 }

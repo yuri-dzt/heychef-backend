@@ -155,6 +155,7 @@ model Product {
   organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   category        Category     @relation(fields: [category_id], references: [id], onDelete: Cascade)
   addon_groups    ProductAddonGroup[]
+  addon_group_links ProductAddonGroupLink[]
   order_items     OrderItem[]
 
   @@index([organization_id])
@@ -165,7 +166,7 @@ model Product {
 model ProductAddonGroup {
   id              String   @id @default(uuid())
   organization_id String
-  product_id      String
+  product_id      String?
   name            String   @db.VarChar(255)
   min_select      Int      @default(0)
   max_select      Int      @default(1)
@@ -173,12 +174,30 @@ model ProductAddonGroup {
   updated_at      BigInt?
 
   organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  product         Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product         Product?     @relation(fields: [product_id], references: [id], onDelete: Cascade)
   items           ProductAddonItem[]
+  product_links   ProductAddonGroupLink[]
 
   @@index([organization_id])
   @@index([product_id])
   @@map("product_addon_groups")
+}
+
+model ProductAddonGroupLink {
+  id              String   @id @default(uuid())
+  organization_id String
+  product_id      String
+  addon_group_id  String
+  created_at      BigInt
+
+  product         Product           @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  addon_group     ProductAddonGroup @relation(fields: [addon_group_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, addon_group_id])
+  @@index([organization_id])
+  @@index([product_id])
+  @@index([addon_group_id])
+  @@map("product_addon_group_links")
 }
 
 model ProductAddonItem {
@@ -244,6 +263,7 @@ model OrderItem {
   unit_price_cents Int
   total_price_cents Int
   status          OrderItemStatus @default(PENDING)
+  notes           String?  @db.VarChar(500)
   created_at      BigInt
 
   organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)

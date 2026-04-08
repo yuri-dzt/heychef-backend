@@ -78,6 +78,7 @@ export class OrderController {
           quantity: i.quantity,
           unitPriceCents: i.unit_price_cents,
           totalPriceCents: i.total_price_cents,
+          notes: (i as any).notes ?? undefined,
           status: (i as any).status,
           addons: i.addons.map((a) => ({
             id: a.id,

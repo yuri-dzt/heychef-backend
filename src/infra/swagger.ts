@@ -105,6 +105,28 @@ export const swaggerSpec = {
     '/addon-groups/{id}/items': {
       post: { tags: ['Menu'], summary: 'Criar item adicional', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '201': { description: 'Item criado' } } },
     },
+    // ── Global Addon Groups ──
+    '/addon-groups': {
+      get: { tags: ['Addon Groups'], summary: 'List global addon groups', responses: { '200': { description: 'List of global addon groups with items and linked products' } } },
+      post: { tags: ['Addon Groups'], summary: 'Create global addon group', requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, minSelect: { type: 'integer' }, maxSelect: { type: 'integer' } }, required: ['name', 'minSelect', 'maxSelect'] } } } }, responses: { '201': { description: 'Addon group created' } } },
+    },
+    '/addon-groups/{id}': {
+      patch: { tags: ['Addon Groups'], summary: 'Update global addon group', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, minSelect: { type: 'integer' }, maxSelect: { type: 'integer' } } } } } }, responses: { '200': { description: 'Addon group updated' } } },
+      delete: { tags: ['Addon Groups'], summary: 'Delete global addon group', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }], responses: { '204': { description: 'Addon group deleted' } } },
+    },
+    '/addon-groups/{groupId}/items': {
+      post: { tags: ['Addon Groups'], summary: 'Create addon item in global group', parameters: [{ name: 'groupId', in: 'path', required: true, schema: { type: 'string' } }], requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, priceCents: { type: 'integer' } }, required: ['name', 'priceCents'] } } } }, responses: { '201': { description: 'Addon item created' } } },
+    },
+    '/addon-groups/items/{itemId}': {
+      patch: { tags: ['Addon Groups'], summary: 'Update addon item in global group', parameters: [{ name: 'itemId', in: 'path', required: true, schema: { type: 'string' } }], requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, priceCents: { type: 'integer' } } } } } }, responses: { '200': { description: 'Addon item updated' } } },
+      delete: { tags: ['Addon Groups'], summary: 'Delete addon item in global group', parameters: [{ name: 'itemId', in: 'path', required: true, schema: { type: 'string' } }], responses: { '204': { description: 'Addon item deleted' } } },
+    },
+    '/addon-groups/{groupId}/link': {
+      post: { tags: ['Addon Groups'], summary: 'Link addon group to product', parameters: [{ name: 'groupId', in: 'path', required: true, schema: { type: 'string' } }], requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { productId: { type: 'string', format: 'uuid' } }, required: ['productId'] } } } }, responses: { '201': { description: 'Link created' } } },
+    },
+    '/addon-groups/{groupId}/link/{productId}': {
+      delete: { tags: ['Addon Groups'], summary: 'Unlink addon group from product', parameters: [{ name: 'groupId', in: 'path', required: true, schema: { type: 'string' } }, { name: 'productId', in: 'path', required: true, schema: { type: 'string' } }], responses: { '204': { description: 'Link removed' } } },
+    },
     // ── Orders ──
     '/orders': {
       get: { tags: ['Orders'], summary: 'Listar pedidos (com paginação)', parameters: [{ name: 'status', in: 'query', schema: { type: 'string', enum: ['RECEIVED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED'] } }, { name: 'page', in: 'query', schema: { type: 'integer' } }, { name: 'limit', in: 'query', schema: { type: 'integer' } }], responses: { '200': { description: 'Lista paginada' } } },

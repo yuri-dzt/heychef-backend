@@ -1,7 +1,7 @@
 export interface ProductAddonGroupProps {
   id: string;
   organizationId: string;
-  productId: string;
+  productId?: string;
   name: string;
   minSelect: number;
   maxSelect: number;
@@ -12,7 +12,7 @@ export interface ProductAddonGroupProps {
 export class ProductAddonGroup {
   readonly id: string;
   readonly organizationId: string;
-  readonly productId: string;
+  readonly productId?: string;
   readonly name: string;
   readonly minSelect: number;
   readonly maxSelect: number;

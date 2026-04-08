@@ -17,6 +17,7 @@ interface OrderItemInput {
   productId: string;
   quantity: number;
   addonItemIds?: string[];
+  notes?: string;
 }
 
 interface CreatePublicOrderInput {
@@ -97,16 +98,36 @@ export class CreatePublicOrderUseCase {
       throw new ValidationError('One or more addon items not found');
     }
 
+    // Fetch linked addon group IDs for each product
+    const linkedGroupIds = new Map<string, Set<string>>();
+    if (productIds.length > 0) {
+      const links = await prisma.productAddonGroupLink.findMany({
+        where: {
+          product_id: { in: productIds },
+          organization_id: organizationId,
+        },
+      });
+      for (const link of links) {
+        if (!linkedGroupIds.has(link.product_id)) {
+          linkedGroupIds.set(link.product_id, new Set());
+        }
+        linkedGroupIds.get(link.product_id)!.add(link.addon_group_id);
+      }
+    }
+
     for (const item of input.items) {
       if (!item.addonItemIds || item.addonItemIds.length === 0) continue;
 
       const product = productMap.get(item.productId)!;
       const itemAddonIds = item.addonItemIds;
+      const productLinkedGroups = linkedGroupIds.get(product.id) ?? new Set<string>();
 
       const addonsByGroup = new Map<string, string[]>();
       for (const addonId of itemAddonIds) {
         const addon = addonItemMap.get(addonId)!;
-        if (addon.addon_group.product_id !== product.id) {
+        const belongsDirect = addon.addon_group.product_id === product.id;
+        const belongsViaLink = productLinkedGroups.has(addon.addon_group_id);
+        if (!belongsDirect && !belongsViaLink) {
           throw new ValidationError(
             `Addon item "${addon.name}" does not belong to product "${product.name}"`,
           );
@@ -175,6 +196,7 @@ export class CreatePublicOrderUseCase {
           quantity: item.quantity,
           unitPriceCents,
           totalPriceCents,
+          notes: item.notes,
           createdAt: now,
         }),
       );
@@ -282,6 +304,7 @@ export class CreatePublicOrderUseCase {
         quantity: i.quantity,
         unitPriceCents: i.unit_price_cents,
         totalPriceCents: i.total_price_cents,
+        notes: (i as any).notes ?? undefined,
         createdAt: Number(i.created_at),
       })),
     };

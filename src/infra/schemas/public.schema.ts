@@ -13,6 +13,7 @@ export const createPublicOrderSchema = z.object({
         productId: z.string().uuid(),
         quantity: z.number().int().min(1),
         addonItemIds: z.array(z.string().uuid()).optional(),
+        notes: z.string().max(500).optional(),
       }),
     )
     .min(1),

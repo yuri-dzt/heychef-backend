@@ -10,6 +10,7 @@ export class OrderItemMapper {
     quantity: number;
     unit_price_cents: number;
     total_price_cents: number;
+    notes?: string | null;
     created_at: bigint;
   }): OrderItem {
     return new OrderItem({
@@ -20,6 +21,7 @@ export class OrderItemMapper {
       quantity: prisma.quantity,
       unitPriceCents: prisma.unit_price_cents,
       totalPriceCents: prisma.total_price_cents,
+      notes: prisma.notes ?? undefined,
       createdAt: Number(prisma.created_at),
     });
   }
@@ -33,6 +35,7 @@ export class OrderItemMapper {
       quantity: domain.quantity,
       unitPriceCents: domain.unitPriceCents,
       totalPriceCents: domain.totalPriceCents,
+      notes: domain.notes,
       createdAt: domain.createdAt,
     };
   }
@@ -45,6 +48,7 @@ export class OrderItemMapper {
     quantity: number;
     unit_price_cents: number;
     total_price_cents: number;
+    notes: string | null;
     created_at: bigint;
   } {
     return {
@@ -55,6 +59,7 @@ export class OrderItemMapper {
       quantity: domain.quantity,
       unit_price_cents: domain.unitPriceCents,
       total_price_cents: domain.totalPriceCents,
+      notes: domain.notes ?? null,
       created_at: BigInt(domain.createdAt),
     };
   }

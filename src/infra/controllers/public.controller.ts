@@ -26,6 +26,34 @@ export class PublicController {
     }
   };
 
+  subscribeEvents = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const params = tableTokenParamsSchema.parse(req.params);
+
+      const table = await prisma.table.findFirst({
+        where: { qr_code_token: params.tableToken },
+      });
+
+      if (!table) {
+        res.status(404).json({ message: 'Table not found' });
+        return;
+      }
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      orderEvents.subscribeTable(table.id, res);
+
+      req.on('close', () => {
+        orderEvents.unsubscribeTable(table.id, res);
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getActiveOrder = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const params = tableTokenParamsSchema.parse(req.params);
@@ -74,6 +102,7 @@ export class PublicController {
           quantity: i.quantity,
           unitPriceCents: i.unit_price_cents,
           totalPriceCents: i.total_price_cents,
+          notes: (i as any).notes ?? undefined,
           status: (i as any).status,
           addons: i.addons.map((a) => ({
             id: a.id,
@@ -221,6 +250,7 @@ export class PublicController {
           quantity: i.quantity,
           unitPriceCents: i.unit_price_cents,
           totalPriceCents: i.total_price_cents,
+          notes: (i as any).notes ?? undefined,
           status: (i as any).status,
           addons: i.addons.map((a) => ({
             id: a.id,
