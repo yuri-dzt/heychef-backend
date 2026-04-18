@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { AuthMiddleware, RestaurantOnlyMiddleware } from '../middlewares/auth.middleware';
 import { makeEventController } from '../factories/event.factory';
 
-const eventRouter = Router();
+const eventRouter: Router = Router();
 const controller = makeEventController();
 
 eventRouter.get(

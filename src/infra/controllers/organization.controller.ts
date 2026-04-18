@@ -86,6 +86,33 @@ export class OrganizationController {
     }
   };
 
+  updateMyOrg = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const orgId = req.user!.organizationId;
+      if (!orgId) { res.status(400).json({ message: 'Sem organização' }); return; }
+
+      const { name } = req.body;
+      if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        res.status(400).json({ message: 'Nome é obrigatório' });
+        return;
+      }
+
+      const updated = await prisma.organization.update({
+        where: { id: orgId },
+        data: { name: name.trim(), updated_at: BigInt(Date.now()) },
+      });
+
+      res.status(200).json({
+        data: {
+          id: updated.id,
+          name: updated.name,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const params = getOrganizationSchema.parse(req.params);

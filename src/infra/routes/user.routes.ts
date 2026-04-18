@@ -5,7 +5,7 @@ import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 import { PlanLimitsMiddleware } from '../middlewares/plan-limits.middleware';
 
-const router = Router();
+const router: Router = Router();
 const controller = makeUserController();
 
 router.get(

@@ -4,7 +4,7 @@ import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 import { makeOrderController } from '../factories/order.factory';
 
-const orderRouter = Router();
+const orderRouter: Router = Router();
 const controller = makeOrderController();
 
 orderRouter.get(

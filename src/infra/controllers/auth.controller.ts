@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
 import { RegisterUseCase } from '../../app/auth/register.use-case';
 import { LoginUseCase } from '../../app/auth/login.use-case';
 import { GetMeUseCase } from '../../app/auth/get-me.use-case';
@@ -103,6 +104,40 @@ export class AuthController {
           onboardingComplete,
         },
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        res.status(400).json({ message: 'Senha atual e nova senha são obrigatórias' });
+        return;
+      }
+      if (newPassword.length < 4) {
+        res.status(400).json({ message: 'Nova senha deve ter pelo menos 4 caracteres' });
+        return;
+      }
+
+      if (req.user!.type === 'admin') {
+        const admin = await prisma.admin.findUnique({ where: { id: req.user!.id } });
+        if (!admin) { res.status(404).json({ message: 'Admin não encontrado' }); return; }
+        const match = await bcrypt.compare(currentPassword, admin.password_hash);
+        if (!match) { res.status(401).json({ message: 'Senha atual incorreta' }); return; }
+        const hash = await bcrypt.hash(newPassword, 10);
+        await prisma.admin.update({ where: { id: admin.id }, data: { password_hash: hash, updated_at: BigInt(Date.now()) } });
+      } else {
+        const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+        if (!user) { res.status(404).json({ message: 'Usuário não encontrado' }); return; }
+        const match = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!match) { res.status(401).json({ message: 'Senha atual incorreta' }); return; }
+        const hash = await bcrypt.hash(newPassword, 10);
+        await prisma.user.update({ where: { id: user.id }, data: { password_hash: hash, updated_at: BigInt(Date.now()) } });
+      }
+
+      res.status(200).json({ data: { message: 'Senha atualizada com sucesso' } });
     } catch (error) {
       next(error);
     }

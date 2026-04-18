@@ -4,7 +4,7 @@ import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 import { AddonGroupGlobalController } from '../controllers/addon-group-global.controller';
 
-const addonGroupGlobalRouter = Router();
+const addonGroupGlobalRouter: Router = Router();
 const controller = new AddonGroupGlobalController();
 
 addonGroupGlobalRouter.get(

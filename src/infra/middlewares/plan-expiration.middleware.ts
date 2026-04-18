@@ -19,6 +19,12 @@ export const PlanExpirationMiddleware = async (
       return;
     }
 
+    // Only check on write operations — reads are allowed when expired
+    if (req.method === 'GET') {
+      next();
+      return;
+    }
+
     const organization = await prisma.organization.findUnique({
       where: { id: user.organizationId },
       select: { plan_expires_at: true },
@@ -33,7 +39,10 @@ export const PlanExpirationMiddleware = async (
       organization.plan_expires_at &&
       Number(organization.plan_expires_at) < Date.now()
     ) {
-      res.status(403).json({ message: 'Plan expired' });
+      res.status(403).json({
+        message:
+          'Seu plano expirou. Entre em contato com o suporte para renovar. Você ainda pode visualizar os dados mas não pode criar ou alterar.',
+      });
       return;
     }
 

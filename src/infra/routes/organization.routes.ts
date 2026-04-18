@@ -3,7 +3,7 @@ import { makeOrganizationController } from '../factories/organization.factory';
 import { AuthMiddleware } from '../middlewares/auth.middleware';
 import { ForbiddenError } from '../../shared/errors';
 
-const router = Router();
+const router: Router = Router();
 const controller = makeOrganizationController();
 
 const superAdminOnly = (req: Request, res: Response, next: NextFunction): void => {
@@ -17,6 +17,7 @@ const superAdminOnly = (req: Request, res: Response, next: NextFunction): void =
 router.get('/', AuthMiddleware, superAdminOnly, controller.list);
 router.post('/', AuthMiddleware, superAdminOnly, controller.create);
 router.get('/me', AuthMiddleware, controller.getMyOrg);
+router.patch('/me', AuthMiddleware, controller.updateMyOrg);
 router.get('/:id', AuthMiddleware, superAdminOnly, controller.getById);
 router.patch('/:id/renew-plan', AuthMiddleware, superAdminOnly, controller.renewPlan);
 

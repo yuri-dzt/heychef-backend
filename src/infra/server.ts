@@ -9,7 +9,6 @@ import { config } from '../shared/config';
 import { prisma } from '../shared/prisma';
 import { logger } from '../shared/logger';
 import { ErrorHandlerMiddleware } from './middlewares/error-handler.middleware';
-import { seed } from './seed';
 import { startCronJobs } from './cron';
 
 import { authRoutes } from './routes/auth.routes';
@@ -31,6 +30,7 @@ import { sessionRouter } from './routes/session.routes';
 import { auditRouter } from './routes/audit.routes';
 import { uploadRouter } from './routes/upload.routes';
 import { refreshRouter } from './routes/refresh.routes';
+import { adminSetupRoutes } from './routes/admin-setup.routes';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
 
@@ -71,6 +71,7 @@ app.use('/events', eventRouter);
 app.use('/reports', reportRoutes);
 app.use('/plans', planRouter);
 app.use('/admin/auth', adminAuthRoutes);
+app.use('/admin/setup', adminSetupRoutes);
 app.use('/auth/refresh', refreshRouter);
 app.use('/sessions', sessionRouter);
 app.use('/audit', auditRouter);
@@ -91,14 +92,6 @@ app.use(ErrorHandlerMiddleware);
 
 const server = app.listen(config.port, async () => {
   logger.info(`Server running on port ${config.port}`);
-
-  try {
-    await seed();
-  } catch (error) {
-    logger.error('Seed failed on startup', {
-      message: (error as Error).message,
-    });
-  }
 
   startCronJobs();
 });

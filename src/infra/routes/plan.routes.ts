@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PlanController } from '../controllers/plan.controller';
 import { AuthMiddleware } from '../middlewares/auth.middleware';
 
-const planRouter = Router();
+const planRouter: Router = Router();
 const controller = new PlanController();
 
 planRouter.get('/', AuthMiddleware, controller.list);

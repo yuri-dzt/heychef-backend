@@ -51,10 +51,13 @@ export const AuthMiddleware = (
   }
 };
 
-export const RestaurantOnlyMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+export const OrganizationOnlyMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   if (req.user?.type === 'admin') {
-    res.status(403).json({ message: 'This endpoint is for restaurant users only' });
+    res.status(403).json({ message: 'Este endpoint é apenas para usuários do estabelecimento' });
     return;
   }
   next();
 };
+
+// Backward compatibility alias
+export const RestaurantOnlyMiddleware = OrganizationOnlyMiddleware;

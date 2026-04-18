@@ -8,13 +8,25 @@ const publicRateLimiter = rateLimit({
   message: { message: 'Too many requests, please try again later.' },
 });
 
-const publicRouter = Router();
+const perTableOrderLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // 5 orders per minute per table
+  keyGenerator: (req) => String(req.params.tableToken || req.ip || 'unknown'),
+  message: { message: 'Muitos pedidos em sequência. Aguarde um momento.' },
+});
+
+const publicRouter: Router = Router();
 const controller = makePublicController();
 
 publicRouter.get('/menu/:tableToken', controller.getMenu);
 publicRouter.get('/order/:tableToken', controller.getActiveOrder);
 publicRouter.get('/events/:tableToken', controller.subscribeEvents);
-publicRouter.post('/orders/:tableToken', publicRateLimiter, controller.createOrder);
+publicRouter.post(
+  '/orders/:tableToken',
+  perTableOrderLimiter,
+  publicRateLimiter,
+  controller.createOrder,
+);
 publicRouter.delete('/order/:tableToken/items/:itemId', controller.removeItem);
 
 export { publicRouter };

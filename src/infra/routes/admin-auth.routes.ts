@@ -3,7 +3,7 @@ import { AdminAuthController } from '../controllers/admin-auth.controller';
 import { AuthMiddleware } from '../middlewares/auth.middleware';
 import { authRateLimiter } from '../middlewares/rate-limit.middleware';
 
-const router = Router();
+const router: Router = Router();
 const controller = new AdminAuthController();
 
 router.post('/login', authRateLimiter, controller.login);

@@ -5,7 +5,7 @@ import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middlew
 import { makeAddonGroupController } from '../factories/addon-group.factory';
 import { makeAddonItemController } from '../factories/addon-item.factory';
 
-const addonRouter = Router();
+const addonRouter: Router = Router();
 const groupController = makeAddonGroupController();
 const itemController = makeAddonItemController();
 

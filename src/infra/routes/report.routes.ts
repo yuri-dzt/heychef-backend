@@ -4,7 +4,7 @@ import { AuthMiddleware, RestaurantOnlyMiddleware } from '../middlewares/auth.mi
 import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 
-const router = Router();
+const router: Router = Router();
 const controller = makeReportController();
 
 router.post(

@@ -6,7 +6,7 @@ export const swaggerSpec = {
     description: 'API do sistema HeyChef — Cardápio Digital + Pedidos por QR Code',
   },
   servers: [
-    { url: 'http://localhost:5000', description: 'Desenvolvimento' },
+    { url: process.env.API_PUBLIC_URL || '/', description: 'API' },
   ],
   components: {
     securitySchemes: {
@@ -23,7 +23,7 @@ export const swaggerSpec = {
     '/auth/login': {
       post: {
         tags: ['Auth'],
-        summary: 'Login de usuário do restaurante',
+        summary: 'Login de usuário do estabelecimento',
         security: [],
         requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { email: { type: 'string' }, password: { type: 'string' }, organizationId: { type: 'string', format: 'uuid' } }, required: ['email', 'password'] } } } },
         responses: { '200': { description: 'Token JWT + dados do usuário' }, '401': { description: 'Credenciais inválidas' } },

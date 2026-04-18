@@ -5,7 +5,7 @@ import { RestaurantOnlyMiddleware } from '../middlewares/auth.middleware';
 import { PermissionMiddleware } from '../middlewares/permission.middleware';
 import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middleware';
 
-const auditRouter = Router();
+const auditRouter: Router = Router();
 const controller = new AuditController();
 
 auditRouter.get(

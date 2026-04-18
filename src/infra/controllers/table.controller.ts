@@ -32,7 +32,8 @@ export class TableController {
     try {
       const parsed = createTableSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const organizationId = req.user!.organizationId!;
@@ -63,7 +64,8 @@ export class TableController {
     try {
       const parsed = updateTableSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const organizationId = req.user!.organizationId!;

@@ -5,7 +5,7 @@ import { PlanExpirationMiddleware } from '../middlewares/plan-expiration.middlew
 import { PlanLimitsMiddleware } from '../middlewares/plan-limits.middleware';
 import { makeProductController } from '../factories/product.factory';
 
-const productRouter = Router();
+const productRouter: Router = Router();
 const controller = makeProductController();
 
 productRouter.get(

@@ -53,7 +53,8 @@ export class AddonGroupGlobalController {
     try {
       const parsed = createGlobalAddonGroupSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const orgId = req.user!.organizationId!;
@@ -87,7 +88,8 @@ export class AddonGroupGlobalController {
     try {
       const parsed = updateGlobalAddonGroupSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const orgId = req.user!.organizationId!;
@@ -152,7 +154,8 @@ export class AddonGroupGlobalController {
     try {
       const parsed = createGlobalAddonItemSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const orgId = req.user!.organizationId!;
@@ -193,7 +196,8 @@ export class AddonGroupGlobalController {
     try {
       const parsed = updateGlobalAddonItemSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const orgId = req.user!.organizationId!;
@@ -264,7 +268,8 @@ export class AddonGroupGlobalController {
     try {
       const parsed = linkToProductSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new ValidationError(parsed.error.errors[0].message);
+        const details = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new ValidationError(details);
       }
 
       const orgId = req.user!.organizationId!;

@@ -11,7 +11,7 @@ const publicRateLimiter = rateLimit({
   message: { message: 'Too many requests, please try again later.' },
 });
 
-const callWaiterRouter = Router();
+const callWaiterRouter: Router = Router();
 const controller = makeCallWaiterController();
 
 callWaiterRouter.post(
